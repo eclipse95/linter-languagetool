@@ -31,11 +31,26 @@ module.exports = class LinterProvider
     'TYPOS': 'error'
     'WIKIPEDIA': 'info'
   }
+  
+  
+  magicCommentLanguageSetting = (content) ->
+    magicCommentPattern = ///
+      \%\s*!TeX\s* # Starting with %!TeX
+      spellcheck\s*=\s*
+      ([\w-]+) # capture language setting
+    ///ig # ignore Case
+
+    match = magicCommentPattern.exec content
+    if match
+      lang = match[1].replace /_/, '-'
+    else
+      'auto'
+
 
   getPostDataDict= (editorContent) ->
-
+    language = magicCommentLanguageSetting editorContent
     post_data_dict = {
-      'language': 'auto'
+      'language': language
       'text': editorContent
       'motherTongue': atom.config.get 'linter-languagetool.motherTongue'
     }
@@ -117,3 +132,5 @@ module.exports = class LinterProvider
           atom.notifications.addError("Invalid output received from LanguageTool server", {detail: err.message})
           resolve([])
         )
+
+
